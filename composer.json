@@ -1,0 +1,29 @@
+
+{
+    "name": "brdev/router",
+    "description": "Class fast and extremely uncomplicated. Create routes simplified  ",
+    "keywords": [
+        "route",
+        "router",
+        "routes",
+        "brdev",
+        "rotas"
+    ],
+    "homepage": "https://criativodahora.com.br",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Brendo Oliveira",
+            "email": "brendo.dev@outlook.com",
+            "role": "Developer" 
+        }
+    ],
+    "require": {
+        "php": "^7.0|^8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "BRdev\\Router\\": "src"
+        }
+    }
+}
