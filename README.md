@@ -9,7 +9,7 @@ segredos a sua aplicação.
 Router is available via Composer:
 
 ```bash
-"brdev/router": "1"
+"brdev/router": "1.0"
 ```
 
 or run
