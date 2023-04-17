@@ -6,12 +6,18 @@ class Dispatch
 {
     private static array $routes = [];
     private static string $separator = "@";
-
+    private static string $namespace = '';
     
     public static function addRoute(string $method, string $uri, $action): void
     {
+
         $uriPattern = self::convertUriToPattern($uri);
-        self::$routes[$method][$uriPattern] = $action;
+        if(self::getNamespace()){
+            self::$routes[$method][$uriPattern] = [$action, self::getNamespace()];
+        }else{
+            self::$routes[$method][$uriPattern] = [$action, null];
+        }
+       
     }
 
     private static function convertUriToPattern(string $uri): string
@@ -30,6 +36,28 @@ class Dispatch
         http_response_code($code);
         echo $message;
         exit;
+    }
+    
+    public static function namespace(string $namespace)
+    {
+        if (is_string($namespace)) {
+            self::$namespace = ($namespace ? ucwords($namespace) : null);
+        }
+    }
+
+    public static function getNamespace(): string
+    {
+        return self::$namespace;
+    }
+
+    /**
+     * @param callable|string $handler
+     * @param string|null $namespace
+     * @return callable|string
+     */
+    private static function handler(callable|string $handler, ?string $namespace): callable|string
+    {
+        return (!is_string($handler) ? $handler : "{$namespace}\\" . explode(self::$separator, $handler)[0]);
     }
 
     public static function dispatch(): void
@@ -53,21 +81,36 @@ class Dispatch
                 }, ARRAY_FILTER_USE_BOTH);
                 
                 if($result){
-                    $data["data"] = $result;
+                    $data = $result;
                 }else{
-                    $data["data"] = $matches[0];
+                    $data = $matches[0];
                 }
 
-                if (is_callable($action)) {
-                    call_user_func_array($action, $data);
-                } else {
-                    [$controller, $method] = explode(self::$separator, $action);
-                    $controllerInstance = new $controller($data);
-                    call_user_func_array([$controllerInstance, $method], $data);
-                }
+                if (is_callable($action[0])) {
+                    call_user_func($action[0], $data);
+                    return;
+                }else{
+                    [$c, $method] = explode(self::$separator, $action[0]);
+                    $controller = self::handler($action[0], $action[1]);
+               
+                    if(class_exists($controller)){
+                        $controllerInstance = new $controller();
+                        if(method_exists($controllerInstance, $method)){
+                            call_user_func([$controllerInstance, $method], $data);
+                            return;
+                        }
 
+                        self::error('Metodo da Class não existente', 405);
+                        return;
+                    }
+
+                    self::error('Class não existente', 405);
+                    return;
+                }
+                
+            
                 return;
-            }
+            }   
             
         }
 

@@ -4,12 +4,14 @@ use BRdev\Router\Router;
 
 require __DIR__."/../vendor/autoload.php";
 
-require 'Web.php';
- 
-
+//namespace
+Router::namespace("BRdev\Router\Web");
 Router::get('/','Web@home');
 Router::get('/sobre','Web@about');
-Router::get('/user/{id}', 'Web@user');
+
+//namespace
+Router::namespace("BRdev\Router\App");
+Router::get('/user/{id}', 'App@user');
 
 
 Router::dispatch();
