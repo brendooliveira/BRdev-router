@@ -13,5 +13,12 @@ Router::get('/sobre','Web@about');
 Router::namespace("BRdev\Router\App");
 Router::get('/user/{id}', 'App@user');
 
+Router::get('/error/{code}', function($data) {
+    var_dump($data['code']);
+});
 
 Router::dispatch();
+
+if(Router::getError()){
+    Router::redirect('/router/test/error/'.Router::getError());
+}

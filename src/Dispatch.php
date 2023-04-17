@@ -7,17 +7,17 @@ class Dispatch
     private static array $routes = [];
     private static string $separator = "@";
     private static string $namespace = '';
-    
+    public static int $setError = 0;
+
     public static function addRoute(string $method, string $uri, $action): void
     {
 
         $uriPattern = self::convertUriToPattern($uri);
-        if(self::getNamespace()){
+        if (self::getNamespace()) {
             self::$routes[$method][$uriPattern] = [$action, self::getNamespace()];
-        }else{
+        } else {
             self::$routes[$method][$uriPattern] = [$action, null];
         }
-       
     }
 
     private static function convertUriToPattern(string $uri): string
@@ -29,19 +29,34 @@ class Dispatch
     public static function redirect(string $url): void
     {
         header("Location: $url");
+        exit;
     }
 
     public static function error(string $message, int $code): void
     {
         http_response_code($code);
-        echo $message;
-        exit;
+        header("X-Error-Message: $message");
+        self::setError($code);
     }
-    
-    public static function namespace(string $namespace)
+
+    public static function setError(int $code): int
+    {
+        return self::$setError = $code;
+    }
+
+    public static function getError(): int
+    {
+        if (self::$setError != 0) {
+            return self::$setError;
+        }
+
+        return false;
+    }
+
+    public static function namespace(string $namespace): string
     {
         if (is_string($namespace)) {
-            self::$namespace = ($namespace ? ucwords($namespace) : null);
+            return self::$namespace = ($namespace ? ucwords($namespace) : null);
         }
     }
 
@@ -79,23 +94,23 @@ class Dispatch
                 $result = array_filter($matches, function ($value, $key) {
                     return is_string($key);
                 }, ARRAY_FILTER_USE_BOTH);
-                
-                if($result){
+
+                if ($result) {
                     $data = $result;
-                }else{
+                } else {
                     $data = $matches[0];
                 }
 
                 if (is_callable($action[0])) {
                     call_user_func($action[0], $data);
                     return;
-                }else{
+                } else {
                     [$c, $method] = explode(self::$separator, $action[0]);
                     $controller = self::handler($action[0], $action[1]);
-               
-                    if(class_exists($controller)){
+
+                    if (class_exists($controller)) {
                         $controllerInstance = new $controller();
-                        if(method_exists($controllerInstance, $method)){
+                        if (method_exists($controllerInstance, $method)) {
                             call_user_func([$controllerInstance, $method], $data);
                             return;
                         }
@@ -107,11 +122,10 @@ class Dispatch
                     self::error('Class não existente', 405);
                     return;
                 }
-                
-            
+
+
                 return;
-            }   
-            
+            }
         }
 
         self::error('Rota não encontrada', 404);
