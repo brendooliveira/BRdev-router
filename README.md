@@ -9,7 +9,7 @@ segredos a sua aplicação.
 Router is available via Composer:
 
 ```bash
-"brdev/router": "1.1"
+"brdev/router": "1.2"
 ```
 
 or run
@@ -71,10 +71,17 @@ Router::get('/sobre','Web@about');
 
 //namespace
 Router::namespace("BRdev\Router\App");
-Router::get('/user/{id}', 'Web@user');
+Router::get('/user/{id}', 'App@user');
 
+//error router
+Router::get('/error/{code}','App@error');
 
 Router::dispatch();
+
+//error
+if(Router::getError()){
+    Router::redirect('/router/test/error/'.Router::getError());
+}
 
 ```
 
@@ -101,7 +108,16 @@ Router::get('/user/{id}', function ($data) {
     echo "User ". $data["id"];
 });
 
+//error router
+Router::get('/error/{code}',function ($data){
+    var_dump($data['code'])
+});
 
 Router::dispatch();
+
+//error
+if(Router::getError()){
+    Router::redirect('/router/test/error/'.Router::getError());
+}
 
 ```
