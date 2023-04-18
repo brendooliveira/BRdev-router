@@ -20,6 +20,11 @@ class Router extends Dispatch
         self::addRoute('PUT', $uri, $action);
     }
 
+    public static function patch(string $uri, $action): void
+    {
+        self::addRoute('PATCH', $uri, $action);
+    }
+
     public static function delete(string $uri, $action): void
     {
         self::addRoute('DELETE', $uri, $action);

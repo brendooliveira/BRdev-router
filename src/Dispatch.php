@@ -4,14 +4,27 @@ namespace BRdev\Router;
 
 class Dispatch
 {
-    private static array $routes = [];
-    private static string $separator = "@";
-    private static string $namespace = '';
+    /** @var array */
+    protected static array $routes = [];
+
+    /** @var string */
+    protected static string $separator = "@";
+
+    /** @var string */
+    protected static string $namespace = '';
+
+    /** @var int */
     public static int $setError = 0;
+
+    /** @var array|null */
+    protected static ?array $data = null;
+
+    /** @var string */
+    protected static string $httpMethod;
 
     public static function addRoute(string $method, string $uri, $action): void
     {
-
+        self::$httpMethod = $_SERVER['REQUEST_METHOD'];
         $uriPattern = self::convertUriToPattern($uri);
         if (self::getNamespace()) {
             self::$routes[$method][$uriPattern] = [$action, self::getNamespace()];
@@ -20,15 +33,28 @@ class Dispatch
         }
     }
 
+     /**
+     * @return string
+     */
     private static function convertUriToPattern(string $uri): string
     {
         $pattern = preg_replace('/{([\w-]+)}/', '(?P<\1>[^\/]+)', $uri);
         return '@^' . $pattern . '\/?$@';
     }
 
+    /**
+     * @return null|array
+     */
+    public function data(): ?array
+    {
+        return self::$data;
+    }
+
+
     public static function redirect(string $url): void
     {
-        header("Location: $url");
+        $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
+        header("Location: ".$basePath.$url);
         exit;
     }
 
@@ -60,7 +86,7 @@ class Dispatch
         }
     }
 
-    public static function getNamespace(): string
+    protected static function getNamespace(): string
     {
         return self::$namespace;
     }
@@ -70,9 +96,42 @@ class Dispatch
      * @param string|null $namespace
      * @return callable|string
      */
-    private static function handler(callable|string $handler, ?string $namespace): callable|string
+    protected static function handler(callable|string $handler, ?string $namespace): callable|string
     {
         return (!is_string($handler) ? $handler : "{$namespace}\\" . explode(self::$separator, $handler)[0]);
+    }
+
+    /**
+     * httpMethod form spoofing
+    */
+    protected static function formSpoofing(): void
+    {
+        $post = filter_input_array(INPUT_POST, FILTER_DEFAULT);
+        
+        if (!empty($post['_method']) && in_array($post['_method'], ["PUT", "PATCH", "DELETE"])) {
+            self::$httpMethod = $post['_method'];
+            self::$data = $post;
+
+            unset(self::$data["_method"]);
+            return;
+        }
+
+        if (self::$httpMethod == "POST") {
+            self::$data = filter_input_array(INPUT_POST, FILTER_DEFAULT);
+
+            unset(self::$data["_method"]);
+            return;
+        }
+
+        if (in_array(self::$httpMethod, ["PUT", "PATCH", "DELETE"]) && !empty($_SERVER['CONTENT_LENGTH'])) {
+            parse_str(file_get_contents('php://input', false, null, 0, $_SERVER['CONTENT_LENGTH']), $putPatch);
+            self::$data = $putPatch;
+
+            unset(self::$data["_method"]);
+            return;
+        }
+
+        self::$data = [];
     }
 
     public static function dispatch(): void
@@ -82,6 +141,7 @@ class Dispatch
         $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
         $requestUri = str_replace($basePath, '', $requestUri);
 
+        self::formSpoofing();
 
         if (!isset(self::$routes[$requestMethod])) {
             self::error('Método de requisição não suportado.', 405);
@@ -96,9 +156,9 @@ class Dispatch
                 }, ARRAY_FILTER_USE_BOTH);
 
                 if ($result) {
-                    $data = $result;
+                    $data = array_merge($result, self::$data);
                 } else {
-                    $data = $matches[0];
+                    $data = array_merge(["url" => $matches[0]], self::$data);
                 }
 
                 if (is_callable($action[0])) {
