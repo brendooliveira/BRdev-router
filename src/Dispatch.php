@@ -2,29 +2,28 @@
 
 namespace BRdev\Router;
 
+/**
+ * Author Brendo Olveira
+ * Email brendo.dev@outlook.com
+ */
+
 class Dispatch
 {
-    /** @var array */
-    protected static array $routes = [];
+    private static array $routes = [];
+    private static string $separator = "@";
+    private static string $namespace = '';
+    public static string $url = '';
 
-    /** @var string */
-    protected static string $separator = "@";
-
-    /** @var string */
-    protected static string $namespace = '';
-
-    /** @var int */
-    public static int $setError = 0;
-
-    /** @var array|null */
-    protected static ?array $data = null;
-
-    /** @var string */
-    protected static string $httpMethod;
-
+    /**
+     * Undocumented function
+     *
+     * @param string $method
+     * @param string $uri
+     * @param [type] $action
+     * @return void
+     */
     public static function addRoute(string $method, string $uri, $action): void
     {
-        self::$httpMethod = $_SERVER['REQUEST_METHOD'];
         $uriPattern = self::convertUriToPattern($uri);
         if (self::getNamespace()) {
             self::$routes[$method][$uriPattern] = [$action, self::getNamespace()];
@@ -33,7 +32,10 @@ class Dispatch
         }
     }
 
-     /**
+    /**
+     * Undocumented function
+     *
+     * @param string $uri
      * @return string
      */
     private static function convertUriToPattern(string $uri): string
@@ -43,42 +45,41 @@ class Dispatch
     }
 
     /**
-     * @return null|array
+     * Undocumented function
+     *
+     * @param string $url
+     * @return void
      */
-    public function data(): ?array
-    {
-        return self::$data;
-    }
-
-
     public static function redirect(string $url): void
     {
-        $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
-        header("Location: ".$basePath.$url);
+        header("Location:" .self::url($url));
         exit;
     }
 
-    public static function error(string $message, int $code): void
+    /**
+     * Undocumented function
+     *
+     * @param string $url
+     * @return string
+     */
+    public static function url(string $url): string
     {
-        http_response_code($code);
-        header("X-Error-Message: $message");
-        self::setError($code);
+        $scriptName = $_SERVER['SCRIPT_NAME']; 
+        $pathDir = str_replace('/index.php', '', $scriptName);
+        $protocol = empty($_SERVER['HTTPS']) ? 'http' : 'https';
+        $host = $_SERVER['HTTP_HOST'];
+        $baseUrl = $protocol . "://" . $host . $pathDir;
+        $path = ltrim($url, '/');
+
+        return self::$url = $baseUrl . '/' . $path;
     }
 
-    public static function setError(int $code): int
-    {
-        return self::$setError = $code;
-    }
-
-    public static function getError(): int
-    {
-        if (self::$setError != 0) {
-            return self::$setError;
-        }
-
-        return false;
-    }
-
+    /**
+     * Undocumented function
+     *
+     * @param string $namespace
+     * @return string
+     */
     public static function namespace(string $namespace): string
     {
         if (is_string($namespace)) {
@@ -86,54 +87,33 @@ class Dispatch
         }
     }
 
-    protected static function getNamespace(): string
+    /**
+     * Undocumented function
+     *
+     * @return string
+     */
+    public static function getNamespace(): string
     {
         return self::$namespace;
     }
 
     /**
+     * Undocumented function
+     *
      * @param callable|string $handler
      * @param string|null $namespace
      * @return callable|string
      */
-    protected static function handler(callable|string $handler, ?string $namespace): callable|string
+    private static function handler(callable|string $handler, ?string $namespace): callable|string
     {
         return (!is_string($handler) ? $handler : "{$namespace}\\" . explode(self::$separator, $handler)[0]);
     }
 
     /**
-     * httpMethod form spoofing
-    */
-    protected static function formSpoofing(): void
-    {
-        $post = filter_input_array(INPUT_POST, FILTER_DEFAULT);
-        
-        if (!empty($post['_method']) && in_array($post['_method'], ["PUT", "PATCH", "DELETE"])) {
-            self::$httpMethod = $post['_method'];
-            self::$data = $post;
-
-            unset(self::$data["_method"]);
-            return;
-        }
-
-        if (self::$httpMethod == "POST") {
-            self::$data = filter_input_array(INPUT_POST, FILTER_DEFAULT);
-
-            unset(self::$data["_method"]);
-            return;
-        }
-
-        if (in_array(self::$httpMethod, ["PUT", "PATCH", "DELETE"]) && !empty($_SERVER['CONTENT_LENGTH'])) {
-            parse_str(file_get_contents('php://input', false, null, 0, $_SERVER['CONTENT_LENGTH']), $putPatch);
-            self::$data = $putPatch;
-
-            unset(self::$data["_method"]);
-            return;
-        }
-
-        self::$data = [];
-    }
-
+     * Undocumented function
+     *
+     * @return void
+     */
     public static function dispatch(): void
     {
         $requestMethod = $_SERVER['REQUEST_METHOD'];
@@ -141,10 +121,9 @@ class Dispatch
         $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
         $requestUri = str_replace($basePath, '', $requestUri);
 
-        self::formSpoofing();
 
         if (!isset(self::$routes[$requestMethod])) {
-            self::error('Método de requisição não suportado.', 405);
+            ErrorHandler::sendError('Método de requisição não suportado.', 405);
         }
 
         foreach (self::$routes[$requestMethod] as $pattern => $action) {
@@ -156,13 +135,13 @@ class Dispatch
                 }, ARRAY_FILTER_USE_BOTH);
 
                 if ($result) {
-                    $data = array_merge($result, self::$data);
+                    $data = $result;
                 } else {
-                    $data = array_merge(["url" => $matches[0]], self::$data);
+                    $data = $matches[0];
                 }
 
                 if (is_callable($action[0])) {
-                    call_user_func($action[0], $data);
+                    call_user_func($action[0], (object) $data);
                     return;
                 } else {
                     [$c, $method] = explode(self::$separator, $action[0]);
@@ -171,15 +150,15 @@ class Dispatch
                     if (class_exists($controller)) {
                         $controllerInstance = new $controller();
                         if (method_exists($controllerInstance, $method)) {
-                            call_user_func([$controllerInstance, $method], $data);
+                            call_user_func([$controllerInstance, $method], (object) $data);
                             return;
                         }
 
-                        self::error('Metodo da Class não existente', 405);
+                        ErrorHandler::sendError('Metodo da Class não existente', 405);
                         return;
                     }
 
-                    self::error('Class não existente', 405);
+                    ErrorHandler::sendError('Class não existente', 405);
                     return;
                 }
 
@@ -188,6 +167,6 @@ class Dispatch
             }
         }
 
-        self::error('Rota não encontrada', 404);
+        ErrorHandler::sendError('Rota não encontrada', 404);
     }
 }

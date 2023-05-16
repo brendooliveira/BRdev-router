@@ -65,12 +65,12 @@ use BRdev\Router\Router;
 require __DIR__."/vendor/autoload.php";
  
 //namespace
-Router::namespace('BRdev\Router\Web');
+Router::namespace("BRdev\Router\Web");
 Router::get('/','Web@home');
 Router::get('/sobre','Web@about');
 
 //namespace
-Router::namespace('BRdev\Router\App');
+Router::namespace("BRdev\Router\App");
 Router::get('/user/{id}', 'App@user');
 
 //error router
@@ -80,7 +80,7 @@ Router::dispatch();
 
 //error
 if(Router::getError()){
-    Router::redirect('/error/'.Router::getError());
+    Router::redirect('/router/test/error/'.Router::getError());
 }
 
 ```
@@ -117,7 +117,7 @@ Router::dispatch();
 
 //error
 if(Router::getError()){
-    Router::redirect('/error/'.Router::getError());
+    Router::redirect('/router/test/error/'.Router::getError());
 }
 
 ```

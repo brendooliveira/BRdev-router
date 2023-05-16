@@ -6,23 +6,20 @@ require __DIR__."/../vendor/autoload.php";
 
 //namespace
 Router::namespace("BRdev\Router\Web");
-Router::get("/","Web@home");
-Router::get("/sobre","Web@about");
-
-Router::post("/post", function ($data) {
-    var_dump($data);
-});
+Router::get('/','Web@home');
+Router::get('/sobre','Web@about');
 
 //namespace
 Router::namespace("BRdev\Router\App");
-Router::get("/user/{id}", "App@user");
+Router::get('/user/{id}', 'App@user');
 
-Router::get("/error/{code}", function($data) {
-    var_dump($data["code"]);
+Router::get('/error/{code}', function($data) {
+    var_dump($data->code);
 });
 
-Router::dispatch();
+Router::dispatch();     
 
-if(Router::getError()){
+
+if(Router::error()){
     Router::redirect("/error/".Router::getError());
 }

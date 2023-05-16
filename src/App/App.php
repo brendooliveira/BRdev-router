@@ -7,7 +7,7 @@ class App
 
    public function user($data)
    {
-      echo "User id:" .$data["id"];
+      var_dump($data->id);
    }
 
 }
