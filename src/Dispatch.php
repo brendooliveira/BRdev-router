@@ -11,8 +11,9 @@ class Dispatch
 {
     private static array $routes = [];
     private static string $separator = "@";
-    private static string $namespace = '';
+    public static string $namespace = '';
     public static string $url = '';
+    private static string $prefix = '';
 
     /**
      * Undocumented function
@@ -24,12 +25,35 @@ class Dispatch
      */
     public static function addRoute(string $method, string $uri, $action): void
     {
+        $uri = self::getPrefix() . $uri;
+        
         $uriPattern = self::convertUriToPattern($uri);
         if (self::getNamespace()) {
             self::$routes[$method][$uriPattern] = [$action, self::getNamespace()];
         } else {
             self::$routes[$method][$uriPattern] = [$action, null];
         }
+    }
+
+    /**
+     * Undocumented function
+     *
+     * @param string $prefix
+     * @return void
+     */
+    public static function setPrefix(string $prefix): void
+    {
+        self::$prefix = $prefix;
+    }   
+
+    /**
+     * Undocumented function
+     *
+     * @return string
+     */
+    public static function getPrefix(): string
+    {
+        return self::$prefix;
     }
 
     /**

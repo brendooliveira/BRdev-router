@@ -14,7 +14,7 @@ class Router extends Dispatch
      */
     public static function get(string $uri, $action): void
     {
-        self::addRoute('GET', $uri, $action);
+       self::addRoute('GET', $uri, $action);
     }
 
         /**
@@ -26,7 +26,7 @@ class Router extends Dispatch
      */
     public static function post(string $uri, $action): void
     {
-        self::addRoute('POST', $uri, $action);
+       self::addRoute('POST', $uri, $action);
     }
 
     /**
@@ -38,7 +38,7 @@ class Router extends Dispatch
      */
     public static function put(string $uri, $action): void
     {
-        self::addRoute('PUT', $uri, $action);
+       self::addRoute('PUT', $uri, $action);
     }
 
     /**
@@ -50,7 +50,7 @@ class Router extends Dispatch
      */
     public static function delete(string $uri, $action): void
     {
-        self::addRoute('DELETE', $uri, $action);
+       self::addRoute('DELETE', $uri, $action);
     }
 
     /**
@@ -74,5 +74,15 @@ class Router extends Dispatch
     public static function geterror(): int
     {
         return ErrorHandler::getCode();
+    }
+
+    public static function group(string $prefix): void
+    {
+        Dispatch::setPrefix($prefix);
+    }
+
+    public static function endgroup(): void
+    {
+        Dispatch::setPrefix('');
     }
 }
