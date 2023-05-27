@@ -8,12 +8,28 @@ namespace BRdev\Router;
  */
 
 class Dispatch
-{
+{   
+
+    /** @var array */
     private static array $routes = [];
+
+    /** @var string */
     private static string $separator = "@";
+
+    /** @var string */
     public static string $namespace = '';
+
+    /** @var string */
     public static string $url = '';
+
+    /** @var string */
     private static string $prefix = '';
+
+    /** @var string */
+    protected static string $httpMethod;
+
+    /** @var array|null */
+    protected static ?array $data = null;
 
     /**
      * Undocumented function
@@ -26,13 +42,55 @@ class Dispatch
     public static function addRoute(string $method, string $uri, $action): void
     {
         $uri = self::getPrefix() . $uri;
-        
+        self::$httpMethod = $_SERVER['REQUEST_METHOD'];
+
         $uriPattern = self::convertUriToPattern($uri);
         if (self::getNamespace()) {
             self::$routes[$method][$uriPattern] = [$action, self::getNamespace()];
         } else {
             self::$routes[$method][$uriPattern] = [$action, null];
         }
+    }
+
+    /**
+     * httpMethod form spoofing
+    */
+    protected static function formSpoofing(): void
+    {
+        $post = filter_input_array(INPUT_POST, FILTER_DEFAULT);
+        
+        if (!empty($post['_method']) && in_array($post['_method'], ["PUT", "PATCH", "DELETE"])) {
+            self::$httpMethod = $post['_method'];
+            self::$data = $post;
+
+            unset(self::$data["_method"]);
+            return;
+        }
+
+        if (self::$httpMethod == "POST") {
+            self::$data = filter_input_array(INPUT_POST, FILTER_DEFAULT);
+
+            unset(self::$data["_method"]);
+            return;
+        }
+
+        if (in_array(self::$httpMethod, ["PUT", "PATCH", "DELETE"]) && !empty($_SERVER['CONTENT_LENGTH'])) {
+            parse_str(file_get_contents('php://input', false, null, 0, $_SERVER['CONTENT_LENGTH']), $putPatch);
+            self::$data = $putPatch;
+
+            unset(self::$data["_method"]);
+            return;
+        }
+
+        self::$data = [];
+    }
+
+    /**
+     * @return null|array
+     */
+    public function data(): ?array
+    {
+        return self::$data;
     }
 
     /**
@@ -150,6 +208,8 @@ class Dispatch
             ErrorHandler::sendError('Método de requisição não suportado.', 405);
         }
 
+        self::formSpoofing();
+
         foreach (self::$routes[$requestMethod] as $pattern => $action) {
 
             if (preg_match($pattern, $requestUri, $matches)) {
@@ -159,9 +219,9 @@ class Dispatch
                 }, ARRAY_FILTER_USE_BOTH);
 
                 if ($result) {
-                    $data = $result;
+                    $data = array_merge($result, self::$data);
                 } else {
-                    $data = $matches[0];
+                    $data = array_merge(["url" => $matches[0]], self::$data);
                 }
 
                 if (is_callable($action[0])) {
