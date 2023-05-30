@@ -4,9 +4,12 @@ namespace BRdev\Router\App;
 class App
 {
 
-   public function user($data)
+   /**
+   * @return void
+   */
+   public function user($data): void
    {
-      var_dump($data->id);
+      echo $data->id;
    }
 
 }

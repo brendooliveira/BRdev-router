@@ -4,13 +4,19 @@ namespace BRdev\Router\Web;
 class Web
 {
 
-   public function home()
-   {
-     echo "Page Home";
-   }
+  /**
+   * @return void
+   */
+  public function home(): void
+  {
+    echo "Page Home";
+  }
 
-   public function about()
-   {
-     echo "Page About";
-   }
+  /**
+   * @return void
+   */
+  public function about(): void
+  {
+    echo "Page About";
+  }
 }
