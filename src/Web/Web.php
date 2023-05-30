@@ -1,17 +1,16 @@
 <?php
 
 namespace BRdev\Router\Web;
-
 class Web
 {
 
    public function home()
    {
-        echo "Page Home";
+     echo "Page Home";
    }
 
    public function about()
    {
-        echo "Page About";
+     echo "Page About";
    }
 }

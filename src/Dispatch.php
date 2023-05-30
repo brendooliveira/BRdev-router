@@ -29,7 +29,7 @@ class Dispatch
     protected static string $httpMethod;
 
     /** @var array|null */
-    protected static ?array $data = null;
+    protected static ? array $data = null;
 
     /**
      * @param string $method
@@ -86,7 +86,7 @@ class Dispatch
     /**
      * @return null|array
      */
-    public function data():  ? array
+    public function data(): ? array
     {
         return self::$data;
     }
@@ -167,7 +167,7 @@ class Dispatch
      * @param string|null $namespace
      * @return callable|string
      */
-    private static function handler(callable  | string $handler,  ? string $namespace) : callable  | string
+    private static function handler(callable|string $handler, ? string $namespace) : callable|string
     {
         return (!is_string($handler) ? $handler : "{$namespace}\\" . explode(self::$separator, $handler)[0]);
     }
@@ -192,7 +192,7 @@ class Dispatch
 
             if (preg_match($pattern, $requestUri, $matches)) {
 
-                $result = array_filter($matches, function ($value, $key) {
+                $result = array_filter($matches, function($value, $key) {
                     return is_string($key);
                 }, ARRAY_FILTER_USE_BOTH);
 

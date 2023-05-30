@@ -1,7 +1,6 @@
 <?php
 
 namespace BRdev\Router\App;
-
 class App
 {
 
