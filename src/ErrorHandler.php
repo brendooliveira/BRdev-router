@@ -7,8 +7,6 @@ class ErrorHandler
     private static int $errorCode = 0;
 
     /**
-     * Undocumented function
-     *
      * @param integer $code
      * @return void
      */
@@ -18,8 +16,6 @@ class ErrorHandler
     }
 
     /**
-     * Undocumented function
-     *
      * @return integer
      */
     public static function getCode(): int
@@ -28,8 +24,6 @@ class ErrorHandler
     }
 
     /**
-     * Undocumented function
-     *
      * @param string $message
      * @param integer $code
      * @return void

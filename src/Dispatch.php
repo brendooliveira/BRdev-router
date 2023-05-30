@@ -8,7 +8,7 @@ namespace BRdev\Router;
  */
 
 class Dispatch
-{   
+{
 
     /** @var array */
     private static array $routes = [];
@@ -32,14 +32,12 @@ class Dispatch
     protected static ?array $data = null;
 
     /**
-     * Undocumented function
-     *
      * @param string $method
      * @param string $uri
      * @param [type] $action
      * @return void
      */
-    public static function addRoute(string $method, string $uri, $action): void
+    public static function addRoute(string $method, string $uri, $action) : void
     {
         $uri = self::getPrefix() . $uri;
         self::$httpMethod = $_SERVER['REQUEST_METHOD'];
@@ -53,12 +51,12 @@ class Dispatch
     }
 
     /**
-     * httpMethod form spoofing
-    */
+     * @return void
+     */
     protected static function formSpoofing(): void
     {
         $post = filter_input_array(INPUT_POST, FILTER_DEFAULT);
-        
+
         if (!empty($post['_method']) && in_array($post['_method'], ["PUT", "PATCH", "DELETE"])) {
             self::$httpMethod = $post['_method'];
             self::$data = $post;
@@ -88,25 +86,21 @@ class Dispatch
     /**
      * @return null|array
      */
-    public function data(): ?array
+    public function data():  ? array
     {
         return self::$data;
     }
 
     /**
-     * Undocumented function
-     *
      * @param string $prefix
      * @return void
      */
-    public static function setPrefix(string $prefix): void
+    public static function setPrefix(string $prefix) : void
     {
         self::$prefix = $prefix;
-    }   
+    }
 
     /**
-     * Undocumented function
-     *
      * @return string
      */
     public static function getPrefix(): string
@@ -115,8 +109,6 @@ class Dispatch
     }
 
     /**
-     * Undocumented function
-     *
      * @param string $uri
      * @return string
      */
@@ -127,26 +119,22 @@ class Dispatch
     }
 
     /**
-     * Undocumented function
-     *
      * @param string $url
      * @return void
      */
     public static function redirect(string $url): void
     {
-        header("Location:" .self::url($url));
+        header("Location:" . self::url($url));
         exit;
     }
 
     /**
-     * Undocumented function
-     *
      * @param string $url
      * @return string
      */
     public static function url(string $url): string
     {
-        $scriptName = $_SERVER['SCRIPT_NAME']; 
+        $scriptName = $_SERVER['SCRIPT_NAME'];
         $pathDir = str_replace('/index.php', '', $scriptName);
         $protocol = empty($_SERVER['HTTPS']) ? 'http' : 'https';
         $host = $_SERVER['HTTP_HOST'];
@@ -157,21 +145,16 @@ class Dispatch
     }
 
     /**
-     * Undocumented function
-     *
      * @param string $namespace
      * @return string
      */
-    public static function namespace(string $namespace): string
-    {
+    function namespace (string $namespace): string {
         if (is_string($namespace)) {
             return self::$namespace = ($namespace ? ucwords($namespace) : null);
         }
     }
 
     /**
-     * Undocumented function
-     *
      * @return string
      */
     public static function getNamespace(): string
@@ -180,20 +163,16 @@ class Dispatch
     }
 
     /**
-     * Undocumented function
-     *
      * @param callable|string $handler
      * @param string|null $namespace
      * @return callable|string
      */
-    private static function handler(callable|string $handler, ?string $namespace): callable|string
+    private static function handler(callable  | string $handler,  ? string $namespace) : callable  | string
     {
         return (!is_string($handler) ? $handler : "{$namespace}\\" . explode(self::$separator, $handler)[0]);
     }
 
     /**
-     * Undocumented function
-     *
      * @return void
      */
     public static function dispatch(): void
@@ -202,7 +181,6 @@ class Dispatch
         $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
         $requestUri = str_replace($basePath, '', $requestUri);
-
 
         if (!isset(self::$routes[$requestMethod])) {
             ErrorHandler::sendError('Método de requisição não suportado.', 405);
@@ -245,7 +223,6 @@ class Dispatch
                     ErrorHandler::sendError('Class não existente', 405);
                     return;
                 }
-
 
                 return;
             }

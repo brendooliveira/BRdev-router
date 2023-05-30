@@ -2,17 +2,29 @@
 
 class Web
 {
-    public function home()
+    /**
+     *
+     * @return void
+     */
+    public function home(): void
     {
         echo "Pagina Home";
     }
 
-    public function about()
+    /**
+     *
+     * @return void
+     */
+    public function about(): void
     {
         echo "Pagina Sobre";
     }
 
-    public function user($data)
+    /**
+     *
+     * @return void
+     */
+    public function user($data): void
     {
         var_dump($data);
     }
