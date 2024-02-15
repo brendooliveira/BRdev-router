@@ -148,7 +148,7 @@ class Dispatch
      * @param string $namespace
      * @return string
      */
-    function namespace (string $namespace): string {
+    public static function namespace (string $namespace): string {
         if (is_string($namespace)) {
             return self::$namespace = ($namespace ? ucwords($namespace) : null);
         }
@@ -197,9 +197,9 @@ class Dispatch
                 }, ARRAY_FILTER_USE_BOTH);
 
                 if ($result) {
-                    $data = array_merge($result, self::$data);
+                    $data = array_merge($result, self::$data ?? []);
                 } else {
-                    $data = array_merge(["url" => $matches[0]], self::$data);
+                    $data = array_merge(["url" => $matches[0]], self::$data ?? []);
                 }
 
                 if (is_callable($action[0])) {
