@@ -8,6 +8,8 @@ require __DIR__."/../vendor/autoload.php";
 //namespace
 Router::namespace("BRdev\Router\Web");
         
+Router::get('/',[Web::class,'web']);
+
 Router::get('/',function () {
     echo 'olá';
 });

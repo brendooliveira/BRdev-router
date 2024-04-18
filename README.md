@@ -59,12 +59,16 @@ location / {
 <?php
 
 use BRdev\Router\Router;
+use BRdev\Router\Web\Web;
 
 require __DIR__."/vendor/autoload.php";
  
 //namespace
 Router::namespace("BRdev\Router\Web");
 Router::get('/','Web@home');
+//or
+Router::get('/',[Web::class,'web']);
+
 Router::get('/sobre','Web@about');
 
 //namespace
