@@ -48,9 +48,7 @@ RewriteRule ^(.*)$ index.php?route=/$1 [L,QSA]
 
 ````nginxconfig
 location / {
-  if ($script_filename !~ "-f"){
-    rewrite ^(.*)$ /index.php?route=/$1 break;
-  }
+     try_files $uri $uri/ /index.php?route=$uri&$args;
 }
 ````
 

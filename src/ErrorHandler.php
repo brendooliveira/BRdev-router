@@ -4,19 +4,19 @@ namespace BRdev\Router;
 
 class ErrorHandler
 {
-    private static int $errorCode = 0;
+    private static $errorCode = 0;
 
     /**
-     * @param integer $code
-     * @return void
+     * @param int $code
+     * @return int
      */
-    public static function setCode(int $code): void
+    public static function setCode(int $code): int
     {
-        self::$errorCode = $code;
+        return self::$errorCode = $code;
     }
 
     /**
-     * @return integer
+     * @return int
      */
     public static function getCode(): int
     {
@@ -25,14 +25,13 @@ class ErrorHandler
 
     /**
      * @param string $message
-     * @param integer $code
-     * @return void
+     * @param int $code
+     * @return int
      */
-    public static function sendError(string $message, int $code): void
+    public static function sendError(string $message, int $code): int
     {
         http_response_code($code);
         header("X-Error-Message: $message");
-        self::setCode($code);
-        return;
+        return self::setCode($code);
     }
 }

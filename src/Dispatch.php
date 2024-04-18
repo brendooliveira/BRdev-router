@@ -11,33 +11,32 @@ class Dispatch
 {
 
     /** @var array */
-    private static array $routes = [];
+    private static $routes = [];
 
     /** @var string */
-    private static string $separator = "@";
+    private static $separator = "@";
 
     /** @var string */
-    public static string $namespace = '';
+    public static  $namespace = '';
 
     /** @var string */
-    public static string $url = '';
+    public static $url = '';
 
     /** @var string */
-    private static string $prefix = '';
+    private static $prefix = '';
 
     /** @var string */
-    protected static string $httpMethod;
+    protected static $httpMethod;
 
     /** @var array|null */
-    protected static ? array $data = null;
+    protected static $data = null;
 
     /**
      * @param string $method
      * @param string $uri
      * @param [type] $action
-     * @return void
      */
-    public static function addRoute(string $method, string $uri, $action) : void
+    public static function addRoute(string $method, string $uri, $action)
     {
         $uri = self::getPrefix() . $uri;
         self::$httpMethod = $_SERVER['REQUEST_METHOD'];
@@ -50,10 +49,7 @@ class Dispatch
         }
     }
 
-    /**
-     * @return void
-     */
-    protected static function formSpoofing(): void
+    protected static function formSpoofing()
     {
         $post = filter_input_array(INPUT_POST, FILTER_DEFAULT);
 
@@ -86,26 +82,23 @@ class Dispatch
     /**
      * @return null|array
      */
-    public function data(): ? array
+    public function data(): array
     {
         return self::$data;
     }
 
     /**
      * @param string $prefix
-     * @return void
      */
-    public static function setPrefix(string $prefix) : void
+    public static function setPrefix(string $prefix = '')
     {
         self::$prefix = $prefix;
     }
 
-    /**
-     * @return string
-     */
-    public static function getPrefix(): string
+
+    public static function getPrefix()
     {
-        return self::$prefix;
+        self::$prefix;
     }
 
     /**
@@ -120,9 +113,8 @@ class Dispatch
 
     /**
      * @param string $url
-     * @return void
      */
-    public static function redirect(string $url): void
+    public static function redirect(string $url)
     {
         header("Location:" . self::url($url));
         exit;
@@ -146,13 +138,14 @@ class Dispatch
 
     /**
      * @param string $namespace
-     * @return string
      */
-    public static function namespace (string $namespace): string {
+    public static function namespace(string $namespace) 
+    {
         if (is_string($namespace)) {
             return self::$namespace = ($namespace ? ucwords($namespace) : null);
         }
     }
+
 
     /**
      * @return string
@@ -165,17 +158,15 @@ class Dispatch
     /**
      * @param callable|string $handler
      * @param string|null $namespace
-     * @return callable|string
+     * @return string
      */
-    private static function handler(callable|string $handler, ? string $namespace) : callable|string
+    private static function handler(string $handler, string $namespace): string
     {
         return (!is_string($handler) ? $handler : "{$namespace}\\" . explode(self::$separator, $handler)[0]);
     }
 
-    /**
-     * @return void
-     */
-    public static function dispatch(): void
+
+    public static function dispatch()
     {
         $requestMethod = $_SERVER['REQUEST_METHOD'];
         $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
@@ -202,13 +193,14 @@ class Dispatch
                     $data = array_merge(["url" => $matches[0]], self::$data ?? []);
                 }
 
-                if (is_callable($action[0])) {
+                if(is_callable($action[0])){
                     call_user_func($action[0], (object) $data);
                     return;
-                } else {
+                }
+
+                if(is_string($action[0])){
                     [$c, $method] = explode(self::$separator, $action[0]);
                     $controller = self::handler($action[0], $action[1]);
-
                     if (class_exists($controller)) {
                         $controllerInstance = new $controller();
                         if (method_exists($controllerInstance, $method)) {
@@ -224,6 +216,21 @@ class Dispatch
                     return;
                 }
 
+                if(is_array($action[0])){
+                    if(class_exists($action[0][0])){
+                        $controllerInstance = new $action[0][0]();
+                        if(method_exists($controllerInstance, $action[0][1])){
+                            call_user_func([$controllerInstance, $action[0][1]], (object) $data);
+                            return;
+                        }
+                        ErrorHandler::sendError('Metodo da Class não existente', 405);
+                        return;
+                    }
+                    ErrorHandler::sendError('Class não existente', 405);
+                    return;
+                }
+
+                ErrorHandler::sendError('Erro', 405);
                 return;
             }
         }
